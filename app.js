@@ -29,10 +29,16 @@ app.use(express.urlencoded({extended: false}));
 
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie('token'));
-app.use(express.static(path.resolve('./public')));
+const publicDir = path.resolve('./public');
+const uploadDir = path.join(publicDir, 'uploads');
+
+// Ensure uploads folder exists
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+app.use(express.static(publicDir));
+
 
 app.get('/', async (req,res) => {
     const allBlogs = await Blog.find({});
