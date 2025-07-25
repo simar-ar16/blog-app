@@ -50,14 +50,27 @@ router.post("/comment/:blogId", async (req, res) => {
   return res.redirect(`/blog/${req.params.blogId}`);
 });
 
-router.post('/', upload.single('coverImage'), async (req,res) => {
-    const {title,body}=req.body;
-    const blog = await Blog.create({
-        body,
-        title,
-        createdBy: req.user._id,
-        coverImageURL: `uploads/${req.file.filename}`,
-    });
-    return res.redirect(`/blog/${blog._id}`);
+
+router.post('/', upload.single('coverImage'), async (req, res) => {
+    try {
+        const { title, body } = req.body;
+        const file = req.file;
+        if (!title || !body || !file) {
+            return res.status(400).render('addBlog', { error: "All fields are required." });
+        }
+
+        const blog = await Blog.create({
+            title,
+            body,
+            createdBy: req.user._id,
+            coverImageURL: `uploads/${file.filename}`,
+        });
+
+        return res.redirect(`/blog/${blog._id}`);
+    } catch (err) {
+        console.error("Error creating blog:", err);
+        return res.status(500).send("Something went wrong. Please try again later.");
+    }
 });
+
 module.exports=router;
